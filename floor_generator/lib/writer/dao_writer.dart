@@ -147,6 +147,7 @@ class DaoWriter extends Writer {
 
     classBuilder
       ..constructors.add(constructorBuilder.build())
+      ..methods.addAll(_generateGetters())
       ..methods.addAll(_generateQueryMethods(queryMethods))
       ..methods.addAll(_generateInsertionMethods(insertionMethods))
       ..methods.addAll(_generateUpdateMethods(updateMethods))
@@ -154,6 +155,24 @@ class DaoWriter extends Writer {
       ..methods.addAll(_generateTransactionMethods(dao.transactionMethods));
 
     return classBuilder.build();
+  }
+
+  List<Method> _generateGetters() {
+    final executorGetter = Method((builder) => builder
+      ..docs.add('//ignore: annotate_overrides')
+      ..type = MethodType.getter
+      ..returns = refer('sqflite.DatabaseExecutor')
+      ..name = 'executor'
+      ..body = (const Code('return database;')));
+
+    final updateListenerGetter = Method((builder) => builder
+      ..docs.add('//ignore: annotate_overrides')
+      ..type = MethodType.getter
+      ..returns = refer('StreamController<String>')
+      ..name = 'updateListener'
+      ..body = (const Code('return changeListener;')));
+
+    return [executorGetter, updateListenerGetter];
   }
 
   List<Field> _createFields(
